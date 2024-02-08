@@ -1,4 +1,5 @@
 Web sovelluskehityksen tehtävät. Viikon 1 tehtävät löytyvät omasta repositorysta.
 
 Week 2-3 test screenshot:
-![wsk2-week3-test-pass](https://github.com/tuiskuna/WSK2Assignments/assets/104358542/20085867-8388-4d67-a1be-69d0cc02c04a)
+![image](https://github.com/tuiskuna/WSK2Assignments/assets/104358542/aebbdf6d-6f10-4639-8220-dc6886fd8fa8)
+
