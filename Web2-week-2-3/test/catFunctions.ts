@@ -207,8 +207,8 @@ const getCatByBoundingBox = (url: string | Function): Promise<Cat[]> => {
       .get('/api/v1/cats/area')
       .set('Content-type', 'application/json')
       .query({
-        topRight: '60, 24',
-        bottomLeft: '60, 30',
+        topRight: '70,20',
+        bottomLeft: '70,20',
       })
       .expect(200, (err, response) => {
         if (err) {
@@ -221,7 +221,6 @@ const getCatByBoundingBox = (url: string | Function): Promise<Cat[]> => {
       });
   });
 };
-
 export {
   getCat,
   getSingleCat,

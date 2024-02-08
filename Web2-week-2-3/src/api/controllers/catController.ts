@@ -64,34 +64,38 @@ Create a postCat function that sends a POST request to /api/v1/cats/ with the fo
 - pic: string - path to the cat picture file
 The function should return a Promise that resolves to a MessageResponse & {data: Cat} object.
  */
+// - catPost - create new cat
 const catPost = async (
-  req: Request<{token: string; pic: string}, {}, Omit<Cat, '_id'>>,
-  res: Response<MessageResponse & {data: Cat}>,
+  req: Request<{}, {}, Cat>,
+  res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  req.body.filename = req.file?.path || '';
+  const user = res.locals.user;
+  const cat: Omit<Cat, '_id'> = {
+    cat_name: req.body.cat_name,
+    weight: req.body.weight,
+    filename: req.file?.filename as string,
+    birthdate: req.body.birthdate,
+    location: res.locals.coords,
+    owner: {
+      _id: user._id!,
+      user_name: user.user_name!,
+      email: user.email!,
+      role: 'user',
+      password: '',
+    },
+  };
+
   try {
-    if (!res.locals.user || !('_id' in res.locals.user)) {
-      throw new CustomError('Invalid user data', 400);
-    }
-
-    req.body.location = {
-      ...req.body.location,
-      type: 'Point',
-    };
-    console.log('location', req.body.location.coordinates);
-
-    const cat = await CatModel.create({
-      ...req.body,
-      owner: res.locals.user._id,
-    });
+    const result = await CatModel.create(cat);
     const response: MessageResponse & {data: Cat} = {
       message: 'OK',
-      data: cat,
+      data: result,
     };
+    console.log('response', response);
     res.status(200).json(response);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 };
 const catPut = async (
@@ -205,31 +209,31 @@ const catDeleteAdmin = async (
     next(error);
   }
 };
-//catGetByBoundingBox - get all cats by bounding box coordinates (getJSON)
+// - catGetByBoundingBox - get all cats by bounding box coordinates (getJSON)
 const catGetByBoundingBox = async (
-  req: Request<{}, {}, {}, {topRight: string; bottomLeft: string}>,
+  req: Request,
   res: Response<Cat[]>,
   next: NextFunction
 ) => {
   try {
-    const {topRight, bottomLeft} = req.query;
-    // query example: /cats/area?topRight=40.73061,-73.935242&bottomLeft=40.71427,-74.00597
-    // longitude first, then latitude (opposite of google maps)
-
-    const rightCorner = topRight.split(',');
-    const leftCorner = bottomLeft.split(',');
-    console.log('top right bottom left', rightCorner, leftCorner);
-    console.log('coords:');
-    const cats = await CatModel.find({
-      location: {
-        $geoWithin: {
-          $box: [leftCorner, rightCorner],
-        },
-      },
-    })
-      .select('-__v')
-      .populate('category', '-__v');
-    res.json(cats);
+    const getCoordinate = (coordinateString: string, index: number): number => {
+      return parseFloat(coordinateString.split(',')[index]);
+    };
+    const topRightMax = getCoordinate(req.query.topRight as string, 0);
+    const topRightMin = getCoordinate(req.query.topRight as string, 1);
+    const bottomLeftMax = getCoordinate(req.query.bottomLeft as string, 0);
+    const bottomLeftMin = getCoordinate(req.query.bottomLeft as string, 1);
+    const cats = await CatModel.find({});
+    const _cats: Cat[] = cats.filter((cat: Cat) => {
+      const [lat, lon] = cat.location.coordinates;
+      return (
+        lat <= topRightMax &&
+        lat >= topRightMin &&
+        lon <= bottomLeftMax &&
+        lon >= bottomLeftMin
+      );
+    });
+    res.json(_cats);
   } catch (error) {
     next(error);
   }
