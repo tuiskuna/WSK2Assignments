@@ -62,6 +62,7 @@ const postCat = (
       .field('cat_name', 'Test Cat ' + new Date().toLocaleDateString('fi-FI'))
       .field('birthdate', '2020-01-01')
       .field('weight', 13.3)
+      .field('location', JSON.stringify({coordinates: [60, 24]}))
       .expect(200, (err, response) => {
         if (err) {
           reject(err);
@@ -206,8 +207,8 @@ const getCatByBoundingBox = (url: string | Function): Promise<Cat[]> => {
       .get('/api/v1/cats/area')
       .set('Content-type', 'application/json')
       .query({
-        topRight: '71,38',
-        bottomLeft: '60,20',
+        topRight: '60, 24',
+        bottomLeft: '60, 30',
       })
       .expect(200, (err, response) => {
         if (err) {

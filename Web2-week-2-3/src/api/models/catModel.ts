@@ -1,23 +1,27 @@
 import mongoose from 'mongoose';
-import {Cat, CatTest} from '../../types/DBTypes';
+import {Cat} from '../../types/DBTypes';
 
-const catSchema = new mongoose.Schema({
+const catSchema = new mongoose.Schema<Cat>({
   cat_name: {
     type: String,
     required: true,
-    minlength: 3,
-    maxlength: 100,
+    minlength: 2,
   },
   weight: {
     type: Number,
     required: true,
   },
-  filename: {
-    type: String,
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
-  birthdate: {
+  filename: {
+    //imagepath
     type: String,
+  },
+  birthdate: {
+    type: Date,
     required: true,
   },
   location: {
@@ -31,15 +35,7 @@ const catSchema = new mongoose.Schema({
       required: true,
     },
   },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
 });
 
-catSchema.index({location: '2dsphere'});
-
 const CatModel = mongoose.model<Cat>('Cat', catSchema);
-
 export default CatModel;
